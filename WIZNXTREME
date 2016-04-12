@@ -1,0 +1,630 @@
+#Include <Misc.au3>
+#include <Array.au3>
+
+Tooltip("passive",0,0)
+
+HotKeySet("!^1", "Terminate")
+HotKeySet("`", "AutoSprint")
+HotKeySet("{F2}", "Staff")
+HotKeySet("{F11}", "Bow")
+HotKeySet("{F10}", "twohander")
+HotKeySet("q", "qkey")
+HotKeySet("w", "wkey")
+HotKeySet("!w", "altwkey")
+HotKeySet("r", "rkey")
+HotKeySet("t", "tkey")
+HotKeySet("a", "akey")
+HotKeySet("!a", "altakey")
+HotKeySet("z", "zkey")
+HotKeySet("x", "xkey")
+HotKeySet("v", "vkey")
+HotKeySet("b", "bkey")
+HotKeySet("n", "nkey")
+HotKeySet("^h", "LootSet")
+HotKeySet("^g", "Loot")
+
+Global $sprint = 1, $mousec[2], $oldmousec[2], $guimode = 0, $tempcycle, $key = 100
+Global $keycycle[15] ; 1 q, 2 w, 3 r, etc
+Global $hotbar = 0; 0 = 10, 1 = 1, etc
+Global $weapon = 0 ; 0 unset, 1 swordboard 2 staff 3 bow 4 2h
+
+ResetCycle()
+
+While 1
+	If _IsPressed(72) Then  ; f3 for sword board
+		If $weapon <> 1 Then
+			$weapon = 1
+			Send("{PgUp}")
+			Sleep(300)
+			Send("{End Down}")
+			Sleep(300)
+			Send("{Del}")
+			Sleep(150)
+		EndIf
+		Send("{End Down}")
+		While (_IsPressed(72))
+			Sleep(25)
+		WEnd
+		Send("{End Up}")
+	ElseIf _IsPressed(4) Then  ; middle mouse button
+		MouseMove(960,540,0)
+		sleep(100)
+		SprintCheck()
+		While (_IsPressed(4))
+			Sleep(25)
+		WEnd
+	ElseIf _IsPressed(90) Then  ; numlock
+		$guimode = Not $guimode
+		sleep(50)
+		SprintCheck()
+		While (_IsPressed(90))
+			Sleep(25)
+		WEnd
+	ElseIf _IsPressed(14) Then  ; caps lock
+		DebuffCycle()
+		sleep(50)
+		SprintCheck()
+		While (_IsPressed(14))
+			Sleep(25)
+		WEnd
+	EndIf
+WEnd
+
+Func LootSet()
+	$mousec = mousegetpos()
+	ToolTip("Loot set",0,0)
+EndFunc
+
+Func Loot()
+	$oldmousec = MouseGetPos()
+	MouseClickDrag("left",$oldmousec[0],$oldmousec[1],$mousec[0],$mousec[1],1)
+	Sleep(100)
+	MouseMove($oldmousec[0],$oldmousec[1],0)
+EndFunc
+
+Func qkey() ; blinds
+	$key = 0
+	HotKeySet("q")
+	Send("q")
+	HotKeySet("q", "qkey")
+	If WinCheck() Then
+		Return
+	EndIf
+	If $weapon <> 2 Then
+		Staff()
+		Sleep(150)
+	EndIf
+	If $weapon == 2 Then
+		Switch ($keycycle[$key])
+
+			Case 0
+				Send("{RAlt down}'{RAlt up}")
+			Case 1
+				Send("{RAlt down},{RAlt up}")
+		EndSwitch
+		$tempcycle = $keycycle[$key] + 1
+		If $tempcycle > 1 Then
+			$tempcycle = 0
+		EndIf
+		ResetCycle()
+		$keycycle[$key] = $tempcycle
+	EndIf
+EndFunc
+
+Func wkey() ; nukes
+	$key = 1
+	HotKeySet("w")
+	Send("w")
+	HotKeySet("w", "wkey")
+	If WinCheck() Then
+		Return
+	EndIf
+	If $weapon <> 2 Then
+		Staff()
+		Sleep(150)
+	EndIf
+	If $weapon == 2 Then
+		Switch ($keycycle[$key])
+			Case 0
+				Send("{RAlt down}p{RAlt up}")
+			Case 1
+				Send("{RAlt down}[{RAlt up}")
+			Case 2
+				Send("{RAlt down}]{RAlt up}")
+			Case 3
+				Send("{RAlt down}\{RAlt up}")
+			Case 4
+				Send("{RAlt down}l{RAlt up}")
+			Case 5
+				Send("{RAlt down};{RAlt up}")
+			EndSwitch
+		$tempcycle = $keycycle[$key] + 1
+		If $tempcycle > 5 Then
+			$tempcycle = 0
+		EndIf
+		ResetCycle()
+		$keycycle[$key] = $tempcycle
+	EndIf
+EndFunc
+
+Func altwkey() ; nukes
+	ToolTip("trigger",0,0)
+	$key = 11
+	HotKeySet("!w")
+	Send("!w")
+	HotKeySet("!w", "altwkey")
+	If WinCheck() Then
+		Return
+	EndIf
+	If $weapon <> 2 Then
+		Staff()
+		Sleep(150)
+	EndIf
+	If $weapon == 2 Then
+		Switch ($keycycle[$key])
+			Case 0
+				Send("{RShift down}'{RShift up}")
+			Case 1
+				Send("{RShift down},{RShift up}")
+			Case 2
+				Send("{RShift down}.{RShift up}")
+			EndSwitch
+		$tempcycle = $keycycle[$key] + 1
+		If $tempcycle > 2 Then
+			$tempcycle = 0
+		EndIf
+		ResetCycle()
+		$keycycle[$key] = $tempcycle
+	EndIf
+EndFunc
+
+Func rkey() ; rays
+	$key = 2
+	HotKeySet("r")
+	Send("r")
+	HotKeySet("r", "rkey")
+	If WinCheck() Then
+		Return
+	EndIf
+	If $weapon <> 2 Then
+		Staff()
+		Sleep(150)
+	EndIf
+	If $weapon == 2 Then
+		Switch ($keycycle[$key])
+			Case 0
+				Send("{RCtrl down}p{RCtrl up}")
+			Case 1
+				Send("{RCtrl down}[{RCtrl up}")
+			Case 2
+				Send("{RCtrl down}]{RCtrl up}")
+			Case 3
+				Send("{RCtrl down}\{RCtrl up}")
+			Case 4
+				Send("{RCtrl down}l{RCtrl up}")
+			Case 5
+				Send("{RCtrl down};{RCtrl up}")
+		EndSwitch
+		$tempcycle = $keycycle[$key] + 1
+		If $tempcycle > 5 Then
+			$tempcycle = 0
+		EndIf
+		ResetCycle()
+		$keycycle[$key] = $tempcycle
+	EndIf
+EndFunc
+
+Func tkey() ; wof come hither
+	$key = 3
+	HotKeySet("t")
+	Send("t")
+	HotKeySet("t", "tkey")
+	If WinCheck() Then
+		Return
+	EndIf
+	If $weapon <> 2 Then
+		Staff()
+		Sleep(150)
+	EndIf
+	If $weapon == 2 Then
+		Switch ($keycycle[$key])
+			Case 0
+				Send("{RShift down}l{RShift up}")
+			Case 1
+				Send("{RShift down};{RShift up}")
+		EndSwitch
+		$tempcycle = $keycycle[$key] + 1
+		If $tempcycle > 1 Then
+			$tempcycle = 0
+		EndIf
+		ResetCycle()
+		$keycycle[$key] = $tempcycle
+	EndIf
+EndFunc
+
+Func altakey() ; knockups
+	$key = 12
+	HotKeySet("!a")
+	Send("!a")
+	HotKeySet("!a", "altakey")
+	If WinCheck() Then
+		Return
+	EndIf
+	If $weapon <> 2 Then
+		Staff()
+		Sleep(150)
+	EndIf
+	If $weapon == 2 Then
+		Switch ($keycycle[$key])
+			Case 0
+				Send("{RShift down}^p{RShift up}")
+			Case 1
+				Send("{RShift down}^[{RShift up}")
+			Case 2
+				Send("{RShift down}^]{RShift up}")
+		EndSwitch
+		$tempcycle = $keycycle[$key] + 1
+		If $tempcycle > 2 Then
+			$tempcycle = 0
+		EndIf
+		ResetCycle()
+		$keycycle[$key] = $tempcycle
+	EndIf
+EndFunc
+
+Func akey() ; knockups
+	$key = 4
+	HotKeySet("a")
+	Send("a")
+	HotKeySet("a", "akey")
+	If WinCheck() Then
+		Return
+	EndIf
+	If $weapon <> 2 Then
+		Staff()
+		Sleep(150)
+	EndIf
+	If $weapon == 2 Then
+		Switch ($keycycle[$key])
+			Case 0
+				Send("{RCtrl down}'{RCtrl up}")
+			Case 1
+				Send("{RCtrl down},{RCtrl up}")
+			Case 2
+				Send("{RCtrl down}.{RCtrl up}")
+			Case 3
+				Send("{RCtrl down}/{RCtrl up}")
+		EndSwitch
+		$tempcycle = $keycycle[$key] + 1
+		If $tempcycle > 3 Then
+			$tempcycle = 0
+		EndIf
+		ResetCycle()
+		$keycycle[$key] = $tempcycle
+	EndIf
+EndFunc
+
+Func zkey() ; buff self 2ndary
+	$key = 5
+	HotKeySet("z")
+	Send("z")
+	HotKeySet("z", "zkey")
+	If WinCheck() Then
+		Return
+	EndIf
+	If $weapon <> 2 Then
+		Staff()
+		Sleep(150)
+	EndIf
+	If $weapon == 2 Then
+		Switch ($keycycle[$key])
+			Case 0
+				Send("{RCtrl down}{RShift down}p{RShift up}{RCtrl up}")
+			Case 1
+				Send("{RCtrl down}{RShift down}[{RShift up}{RCtrl up}")
+			Case 2
+				Send("{RCtrl down}{RShift down}]{RShift up}{RCtrl up}")
+			Case 3
+				Send("{RCtrl down}{RShift down}\{RShift up}{RCtrl up}")
+			Case 4
+				Send("{RCtrl down}{RShift down}l{RShift up}{RCtrl up}")
+			Case 5
+				Send("{RCtrl down}{RShift down};{RShift up}{RCtrl up}")
+			Case 6
+				Send("{RCtrl down}{RShift down}'{RShift up}{RCtrl up}")
+			Case 7
+				Send("{RCtrl down}{RShift down},{RShift up}{RCtrl up}")
+			Case 8
+				Send("{RCtrl down}{RShift down}.{RShift up}{RCtrl up}")
+			Case 9
+				Send("{RCtrl down}{RShift down}/{RShift up}{RCtrl up}")
+		EndSwitch
+		$tempcycle = $keycycle[$key] + 1
+		If $tempcycle > 9 Then
+			$tempcycle = 0
+		EndIf
+		ResetCycle()
+		$keycycle[$key] = $tempcycle
+	EndIf
+EndFunc
+
+Func xkey() ; buff others
+	$key = 6
+	HotKeySet("x")
+	Send("x")
+	HotKeySet("x", "xkey")
+	If WinCheck() Then
+		Return
+	EndIf
+	If $weapon <> 2 Then
+		Staff()
+		Sleep(150)
+	EndIf
+	If $weapon == 2 Then
+		Switch ($keycycle[$key])
+			Case 0
+				Send("{RAlt down}{RCtrl down}p{RCtrl up}{RAlt up}")
+			Case 1
+				Send("{RAlt down}{RCtrl down}[{RCtrl up}{RAlt up}")
+			Case 2
+				Send("{RAlt down}{RCtrl down}]{RCtrl up}{RAlt up}")
+			Case 3
+				Send("{RAlt down}{RCtrl down}\{RCtrl up}{RAlt up}")
+			Case 4
+				Send("{RAlt down}{RCtrl down}l{RCtrl up}{RAlt up}")
+			Case 5
+				Send("{RAlt down}{RCtrl down};{RCtrl up}{RAlt up}")
+			Case 6
+				Send("{RAlt down}{RCtrl down}'{RCtrl up}{RAlt up}")
+			Case 7
+				Send("{RAlt down}{RCtrl down},{RCtrl up}{RAlt up}")
+			Case 8
+				Send("{RAlt down}{RCtrl down}.{RCtrl up}{RAlt up}")
+			Case 9
+				Send("{RAlt down}{RCtrl down}/{RCtrl up}{RAlt up}")
+		EndSwitch
+		$tempcycle = $keycycle[$key] + 1
+		If $tempcycle > 9 Then
+			$tempcycle = 0
+		EndIf
+		ResetCycle()
+		$keycycle[$key] = $tempcycle
+	EndIf
+EndFunc
+
+Func vkey() ; buff self important
+	$key = 7
+	HotKeySet("v")
+	Send("v")
+	HotKeySet("v", "vkey")
+	If WinCheck() Then
+		Return
+	EndIf
+	If $weapon <> 2 Then
+		Staff()
+		Sleep(150)
+	EndIf
+	If $weapon == 2 Then
+		Switch ($keycycle[$key])
+			Case 0
+				Send("{RAlt down}{RShift down}p{RShift up}{RAlt up}")
+			Case 1
+				Send("{RAlt down}{RShift down}[{RShift up}{RAlt up}")
+			Case 2
+				Send("{RAlt down}{RShift down}]{RShift up}{RAlt up}")
+			Case 3
+				Send("{RAlt down}{RShift down}\{RShift up}{RAlt up}")
+			Case 4
+				Send("{RAlt down}{RShift down}l{RShift up}{RAlt up}")
+			Case 5
+				Send("{RAlt down}{RShift down};{RShift up}{RAlt up}")
+			Case 6
+				Send("{RAlt down}{RShift down}'{RShift up}{RAlt up}")
+			Case 7
+				Send("{RAlt down}{RShift down},{RShift up}{RAlt up}")
+			Case 8
+				Send("{RAlt down}{RShift down}.{RShift up}{RAlt up}")
+			Case 9
+				Send("{RAlt down}{RShift down}/{RShift up}{RAlt up}")
+		EndSwitch
+		$tempcycle = $keycycle[$key] + 1
+		If $tempcycle > 9 Then
+			$tempcycle = 0
+		EndIf
+		ResetCycle()
+		$keycycle[$key] = $tempcycle
+	EndIf
+EndFunc
+
+Func bkey() ; heal others
+	$key = 8
+	HotKeySet("b")
+	Send("b")
+	HotKeySet("b", "bkey")
+	If WinCheck() Then
+		Return
+	EndIf
+	If $weapon <> 2 Then
+		Staff()
+		Sleep(150)
+	EndIf
+	If $weapon == 2 Then
+		Switch ($keycycle[$key])
+			Case 0
+				Send("{RShift down}p{RShift up}")
+			Case 1
+				Send("{RShift down}[{RShift up}")
+			Case 2
+				Send("{RShift down}]{RShift up}")
+			Case 3
+				Send("{RShift down}\{RShift up}")
+		EndSwitch
+		$tempcycle = $keycycle[$key] + 1
+		If $tempcycle > 3 Then
+			$tempcycle = 0
+		EndIf
+		ResetCycle()
+		$keycycle[$key] = $tempcycle
+	EndIf
+EndFunc
+
+Func nkey() ; leeches
+	$key = 9
+	HotKeySet("n")
+	Send("n")
+	HotKeySet("n", "nkey")
+	If WinCheck() Then
+		Return
+	EndIf
+	If $weapon <> 2 Then
+		Staff()
+		Sleep(150)
+	EndIf
+	If $weapon == 2 Then
+		Switch ($keycycle[$key])
+			Case 0
+				Send("{RShift down}'{RShift up}")
+			Case 1
+				Send("{RShift down},{RShift up}")
+			Case 2
+				Send("{RShift down}.{RShift up}")
+		EndSwitch
+		$tempcycle = $keycycle[$key] + 1
+		If $tempcycle > 2 Then
+			$tempcycle = 0
+		EndIf
+		ResetCycle()
+		$keycycle[$key] = $tempcycle
+	EndIf
+EndFunc
+
+Func DebuffCycle()
+	$key = 10
+	If WinCheck() Then
+		Return
+	EndIf
+	If $weapon <> 2 Then
+		Staff()
+		Sleep(150)
+	EndIf
+	If $weapon == 2 Then
+		Switch ($keycycle[$key])
+			Case 0
+				Send("^p")
+			Case 1
+				Send("^[")
+			Case 2
+				Send("^]")
+			Case 3
+				Send("^\")
+			Case 4
+				Send("^l")
+			Case 5
+				Send("^;")
+			Case 6
+				Send("^'")
+		EndSwitch
+		$tempcycle = $keycycle[$key] + 1
+		If $tempcycle > 6 Then
+			$tempcycle = 0
+		EndIf
+		ResetCycle()
+		$keycycle[$key] = $tempcycle
+	EndIf
+EndFunc
+
+Func ResetCycle()
+	Send("{RAlt up}{RCtrl Up}{RShift Up}")
+	;_ArrayDisplay($keycycle)
+	Local $teststring = "", $i = 0
+	For $i = 0 To UBound($keycycle) - 1 Step 1
+		$keycycle[$i] = 0
+		;$teststring = $teststring + " " + $keycycle[$i]
+	Next
+	;_ArrayDisplay($keycycle)
+	;ToolTip($teststring, 0, 0)
+EndFunc
+
+Func Staff()
+	SprintCheck()
+	HotKeySet("{F2}")
+	Send("{F2}")
+	HotKeySet("{F2}", "Staff")
+	Sleep(150)
+	$weapon = 2
+	Send("{RAlt down}1{RAlt up}")
+EndFunc
+
+Func Bow()
+	SprintCheck()
+	HotKeySet("{F11}")
+	Send("{F11}")
+	HotKeySet("{F11}", "Bow")
+	Sleep(50)
+	$weapon = 3
+	Send("{RShift down}/{RShift up}")
+EndFunc
+
+Func twohander()
+	$key = 14
+	SprintCheck()
+	HotKeySet("{F10}")
+	Send("{F10}")
+	HotKeySet("{F10}", "twohander")
+	Sleep(50)
+	If $weapon <> 4 Then
+		Sleep(350)
+	EndIf
+	$weapon = 4
+	Switch ($keycycle[$key])
+		Case 0
+			Send("^,")
+		Case 1
+			Send("^.")
+		Case 2
+			Send("^/")
+	EndSwitch
+	$tempcycle = $keycycle[$key] + 1
+	If $tempcycle > 2 Then
+		$tempcycle = 0
+	EndIf
+	ResetCycle()
+	$keycycle[$key] = $tempcycle
+EndFunc
+
+;Func SwordBoard()
+;Send("{PgUp}")
+;	Sleep(100)
+;	Send("{PgDn}")
+;	$weapon = $weapon + 1
+;	ToolTip($weapon,0,0)
+;EndFunc
+
+Func WinCheck()
+	If (WinGetTitle("") == "Darkfall Online") Then
+		return 0
+	Else
+		return 1
+	EndIf
+EndFunc
+
+Func AutoSprint()
+	If $sprint Then
+		$sprint = 0
+		Send("{F12 up}")
+	Else
+		$sprint = 1
+		Send("{F12 down}")
+	EndIf
+EndFunc
+
+Func SprintCheck()
+	If $sprint Then
+		;ToolTip("trigger",0,0)
+		Send("{F12 down}")
+	EndIf
+EndFunc
+
+Func Terminate()
+    Exit 0
+EndFunc
